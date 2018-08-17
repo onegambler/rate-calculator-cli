@@ -1,5 +1,7 @@
 package com.robertomagale.ratecalculator;
 
+import static java.util.Objects.requireNonNull;
+
 import com.robertomagale.ratecalculator.calculator.MonthlyPaymentCalculator;
 import com.robertomagale.ratecalculator.model.Offer;
 import com.robertomagale.ratecalculator.model.Quote;
@@ -19,6 +21,9 @@ public class LoanQuoteEngine {
                     QuoteWriter quoteWriter,
                     MonthlyPaymentCalculator monthlyPaymentCalculator) {
 
+        requireNonNull(quoteWriter, "Quote writer cannot be null");
+        requireNonNull(monthlyPaymentCalculator, "Monthly payment calculator cannot be null");
+        requireNonNull(dataReader, "Data reader cannot be null");
         this.quoteWriter = quoteWriter;
         this.monthlyPaymentCalculator = monthlyPaymentCalculator;
         this.sortedOffers = new TreeSet<>(dataReader.getOffers());
