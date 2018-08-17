@@ -37,14 +37,14 @@ public class LoanQuoteEngine {
         double totalMonthlyPayment = 0;
 
         for (Offer offer : sortedOffers) {
-            int offerLoanAmount = Math.min(leftLoanAmount, offer.getAmount());
+            int offerLoanedAmount = getOfferLoanedAmount(leftLoanAmount, offer);
 
             totalMonthlyPayment += monthlyPaymentCalculator.calculate(
-                    offerLoanAmount,
+                    offerLoanedAmount,
                     numberOfTerms,
                     offer.getAnnualInterestRate());
 
-            leftLoanAmount -= offerLoanAmount;
+            leftLoanAmount -= offerLoanedAmount;
             totalLoanRate += offer.getAnnualInterestRate();
             totalLoaners++;
             if (isLoanComplete(leftLoanAmount)) {
@@ -55,14 +55,22 @@ public class LoanQuoteEngine {
         if (!isLoanComplete(leftLoanAmount)) {
             quoteWriter.writeInsufficientFunding(leftLoanAmount);
         } else {
+            double totalRate = totalLoanRate / totalLoaners;
+            double totalRepayment = totalMonthlyPayment * numberOfTerms;
+
             Quote quote = Quote.builder()
                     .requestedAmount(loanAmount)
-                    .totalRate(totalLoanRate / totalLoaners)
+                    .totalRate(totalRate)
                     .monthlyRepayment(totalMonthlyPayment)
-                    .totalRepayment(totalMonthlyPayment * numberOfTerms)
+                    .totalRepayment(totalRepayment)
                     .build();
+
             quoteWriter.writeQuote(quote);
         }
+    }
+
+    private int getOfferLoanedAmount(int leftLoanAmount, Offer offer) {
+        return Math.min(leftLoanAmount, offer.getAmount());
     }
 
     private boolean isLoanComplete(int leftAmount) {
